@@ -172,7 +172,8 @@ STREAMS = {
         'path': 'Invoices',
         'data_key': 'Invoices',
         'params': {
-            'StartDate': '<last_datetime>'
+            'StartDate': '<last_datetime>',
+            'EndDate': '<current_datetime>'
         },
         'key_properties': ['id'],
         'replication_method': 'INCREMENTAL',
@@ -181,9 +182,15 @@ STREAMS = {
     },
     'media_partners': {
         'path': 'MediaPartners',
+        'params': {
+            'StartDate': '<last_datetime>',
+            'EndDate': '<current_datetime>'
+        },
         'data_key': 'Partners',
         'key_properties': ['id'],
-        'replication_method': 'FULL_TABLE'
+        'replication_method': 'INCREMENTAL',
+        'replication_keys': ['date_last_updated'],
+        'bookmark_type': 'datetime'
     },
     'phone_numbers': {
         'path': 'PhoneNumbers',

@@ -16,7 +16,8 @@ REQUIRED_CONFIG_KEYS = [
     'auth_token',
     'api_catalog',
     'start_date',
-    'user_agent'
+    'end_date',
+    'user_agent',
 ]
 
 def do_discover(config):

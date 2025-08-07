@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import timedelta, datetime
 import json
 import singer
 from singer import metrics, metadata, Transformer, utils
@@ -124,6 +124,7 @@ def sync_endpoint(client,
                   state,
                   config,
                   start_date,
+                  end_date,
                   stream_name,
                   path,
                   endpoint_config,
@@ -150,8 +151,8 @@ def sync_endpoint(client,
         last_datetime = get_bookmark(state, stream_name, start_date)
         max_bookmark_value = last_datetime
 
-    end_dttm = utils.now()
-    end_dt = end_dttm.date()
+    end_dttm = end_date
+    end_dt = datetime.strptime(end_dttm, '%Y-%m-%dT%H:%M:%SZ')
     end_dt_str = end_dt.strftime('%Y-%m-%dT%H:%M:%SZ')
 
     start_dttm = end_dttm
@@ -327,6 +328,7 @@ def sync_endpoint(client,
                                     state=state,
                                     config=config,
                                     start_date=start_date,
+                                    end_date=end_date,
                                     stream_name=child_stream_name,
                                     path=child_path,
                                     endpoint_config=child_endpoint_config,
@@ -388,6 +390,8 @@ def update_currently_syncing(state, stream_name):
 def sync(client, config, catalog, state):
     if 'start_date' in config:
         start_date = config['start_date']
+    if 'end_date' in config:
+        end_date = config['end_date']
 
     # Get selected_streams from catalog, based on state last_stream
     #   last_stream = Previous currently synced stream, if the load was interrupted
@@ -415,6 +419,7 @@ def sync(client, config, catalog, state):
                 state=state,
                 config=config,
                 start_date=start_date,
+                end_date=end_date,
                 stream_name=stream_name,
                 path=path,
                 endpoint_config=endpoint_config,
