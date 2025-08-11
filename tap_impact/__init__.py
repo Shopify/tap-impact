@@ -16,7 +16,6 @@ REQUIRED_CONFIG_KEYS = [
     'auth_token',
     'api_catalog',
     'start_date',
-    'end_date',
     'user_agent',
 ]
 
@@ -31,6 +30,8 @@ def do_discover(config):
 def main():
 
     parsed_args = singer.utils.parse_args(REQUIRED_CONFIG_KEYS)
+    if 'end_date' not in parsed_args.config:
+        parsed_args.config['end_date'] = utils.now().strftime('%Y-%m-%dT%H:%M:%SZ')
 
     with ImpactClient(parsed_args.config['account_sid'],
                       parsed_args.config['auth_token'],
