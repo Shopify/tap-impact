@@ -197,9 +197,6 @@ class ImpactClient(object):
             timer.tags[metrics.Tag.http_status_code] = response.status_code
 
         if response.status_code >= 500:
-            LOGGER.error('Error status_code = {}'.format(response.status_code))
-            LOGGER.error('Error response = {}'.format(response.text))
-            LOGGER.error('Error reason = {}'.format(response.reason))
             raise Server5xxError()
 
         if response.status_code != 200:
