@@ -182,15 +182,9 @@ STREAMS = {
     },
     'media_partners': {
         'path': 'MediaPartners',
-        'params': {
-            'StartDate': '<last_datetime>',
-            'EndDate': '<current_datetime>'
-        },
         'data_key': 'Partners',
         'key_properties': ['id'],
-        'replication_method': 'INCREMENTAL',
-        'replication_keys': ['date_last_updated'],
-        'bookmark_type': 'datetime'
+        'replication_method': 'FULL_TABLE',
     },
     'phone_numbers': {
         'path': 'PhoneNumbers',
