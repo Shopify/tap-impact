@@ -213,7 +213,6 @@ def sync_endpoint(client,
                 path=path,
                 params=querystring,
                 endpoint=stream_name)
-            
             # time_extracted: datetime when the data was extracted from the API
             time_extracted = utils.now()
             if not data or data is None or data == {}:
