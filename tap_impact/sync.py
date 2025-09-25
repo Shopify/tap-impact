@@ -169,7 +169,7 @@ def sync_endpoint(client,
     date_list = [str(start_dt + timedelta(days=x)) for x in range((end_dt - start_dt).days + 1)]
     endpoint_total = 0
     total_records = 0
-    limit = 20000 # PageSize (default for API is 20000)
+    limit = 500 # PageSize (default for API is 1000, but we're limiting to 500 to avoid load errors on the API which were quite common)
     for bookmark_date in date_list:
         page = 1
         offset = 0
