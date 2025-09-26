@@ -6,6 +6,7 @@
 #   replication_method: FULL_TABLE or INCREMENTAL
 #   replication_keys: bookmark_field(s), typically a date-time, used for filtering the results
 #        and setting the state
+#   page_size: Page size for the endpoint
 #   params: Query, sort, and other endpoint specific parameters
 #   data_key: JSON element containing the records for the endpoint
 #   bookmark_query_field: Typically a date-time field used for filtering the query
@@ -17,12 +18,14 @@ STREAMS = {
         'path': 'Ads',
         'data_key': 'Ads',
         'key_properties': ['id'],
+        'page_size': 1000,
         'replication_method': 'FULL_TABLE'
     },
     'api_submissions': {
         'path': 'APISubmissions',
         'data_key': 'APISubmission',
         'key_properties': ['batch_id'],
+        'page_size': 1000,
         'replication_method': 'INCREMENTAL',
         'replication_keys': ['submission_date'],
         'bookmark_type': 'datetime'
@@ -31,6 +34,7 @@ STREAMS = {
         'path': 'Campaigns',
         'data_key': 'Campaigns',
         'key_properties': ['id'],
+        'page_size': 20000,
         'replication_method': 'FULL_TABLE',
         'children': {
             'actions': {
@@ -42,6 +46,7 @@ STREAMS = {
                     'ActionDateEnd': '<current_datetime>',
                 },
                 'key_properties': ['id'],
+                'page_size': 20000,
                 'replication_method': 'INCREMENTAL',
                 'replication_keys': ['locking_date'],
                 'bookmark_type': 'datetime'
@@ -55,6 +60,7 @@ STREAMS = {
                     'EndDate': '<current_datetime>'
                 },
                 'key_properties': ['id'],
+                'page_size': 20000,
                 'replication_method': 'INCREMENTAL',
                 'replication_keys': ['creation_date'],
                 'bookmark_type': 'datetime'
@@ -68,6 +74,7 @@ STREAMS = {
                     'EndDate': '<current_datetime>'
                 },
                 'key_properties': ['id'],
+                'page_size': 20000,
                 'replication_method': 'INCREMENTAL',
                 'replication_keys': ['update_date'],
                 'bookmark_type': 'datetime'
@@ -76,6 +83,7 @@ STREAMS = {
                 'path': 'Campaigns/{}/Clicks',
                 'data_key': 'Clicks',
                 'key_properties': ['id'],
+                'page_size': 20000,
                 'replication_method': 'INCREMENTAL',
                 'replication_keys': ['event_date'],
                 'bookmark_type': 'datetime',
@@ -85,6 +93,7 @@ STREAMS = {
                 'path': 'Campaigns/{}/Contacts',
                 'data_key': 'Contacts',
                 'key_properties': ['id'],
+                'page_size': 20000,
                 'replication_method': 'FULL_TABLE',
                 'parent': 'campaign'
             },
@@ -92,6 +101,7 @@ STREAMS = {
                 'path': 'Campaigns/{}/Contracts',
                 'data_key': 'Contracts',
                 'key_properties': ['id'],
+                'page_size': 20000,
                 'replication_method': 'FULL_TABLE',
                 'parent': 'campaign'
             },
@@ -99,12 +109,14 @@ STREAMS = {
                 'path': 'Campaigns/{}/Models/<model_id>/ConversionPaths',
                 'data_key': 'ConversionPaths',
                 'key_properties': ['uri'],
+                'page_size': 20000,
                 'replication_method': 'FULL_TABLE'
             },
             'media_partner_groups': {
                 'path': 'Campaigns/{}/MediaPartnerGroups',
                 'data_key': 'Groups',
                 'key_properties': ['id'],
+                'page_size': 20000,
                 'replication_method': 'FULL_TABLE',
                 'parent': 'campaign'
             },
@@ -112,6 +124,7 @@ STREAMS = {
                 'path': 'Campaigns/{}/Notes',
                 'data_key': 'Notes',
                 'key_properties': ['id'],
+                'page_size': 20000,
                 'replication_method': 'INCREMENTAL',
                 'replication_keys': ['modification_date'],
                 'bookmark_type': 'datetime',
@@ -123,6 +136,7 @@ STREAMS = {
         'path': 'Catalogs',
         'data_key': 'Catalogs',
         'key_properties': ['id'],
+        'page_size': 1000,
         'replication_method': 'FULL_TABLE',
         'children': {
             'catalog_items': {
@@ -138,18 +152,21 @@ STREAMS = {
         'path': 'CompanyInformation',
         'data_key': 'CompanyInformation',
         'key_properties': ['company_name'],
+        'page_size': 1000,
         'replication_method': 'FULL_TABLE'
     },
     'deals': {
         'path': 'Deals',
         'data_key': 'Deals',
         'key_properties': ['id'],
+        'page_size': 1000,
         'replication_method': 'FULL_TABLE',
     },
     'exception_lists': {
         'path': 'ExceptionLists',
         'data_key': 'ExceptionLists',
         'key_properties': ['id'],
+        'page_size': 1000,
         'replication_method': 'FULL_TABLE',
         'children': {
             'exception_list_items': {
@@ -164,6 +181,7 @@ STREAMS = {
         'path': 'FTPFileSubmissions',
         'data_key': 'FTPFileSubmissions',
         'key_properties': ['batch_id'],
+        'page_size': 1000,
         'replication_method': 'INCREMENTAL',
         'replication_keys': ['submission_date'],
         'bookmark_type': 'datetime'
@@ -171,6 +189,7 @@ STREAMS = {
     'invoices': {
         'path': 'Invoices',
         'data_key': 'Invoices',
+        'page_size': 500,
         'params': {
             'StartDate': '<last_datetime>',
             'EndDate': '<current_datetime>'
@@ -184,24 +203,28 @@ STREAMS = {
         'path': 'MediaPartners',
         'data_key': 'Partners',
         'key_properties': ['id'],
+        'page_size': 20000,
         'replication_method': 'FULL_TABLE',
     },
     'phone_numbers': {
         'path': 'PhoneNumbers',
         'data_key': 'PhoneNumbers',
         'key_properties': ['id'],
+        'page_size': 20000,
         'replication_method': 'FULL_TABLE'
     },
     'promo_codes': {
         'path': 'PromoCodes',
         'data_key': 'PromoCodes',
         'key_properties': ['id'],
+        'page_size': 20000,
         'replication_method': 'FULL_TABLE'
     },
     'reports': {
         'path': 'Reports',
         'data_key': 'Reports',
         'key_properties': ['id'],
+        'page_size': 20000,
         'replication_method': 'FULL_TABLE',
         'children': {
             'report_metadata': {
@@ -216,12 +239,14 @@ STREAMS = {
         'path': 'TrackingValueRequests',
         'data_key': 'TrackingValueRequests',
         'key_properties': ['id'],
+        'page_size': 20000,
         'replication_method': 'FULL_TABLE'
     },
     'unique_urls': {
         'path': 'UniqueUrls',
         'data_key': 'UniqueUrls',
         'key_properties': ['id'],
+        'page_size': 20000,
         'replication_method': 'FULL_TABLE'
     }
 }
@@ -234,7 +259,8 @@ def flatten_streams():
         flat_streams[stream_name] = {
             'key_properties': endpoint_config.get('key_properties'),
             'replication_method': endpoint_config.get('replication_method'),
-            'replication_keys': endpoint_config.get('replication_keys')
+            'replication_keys': endpoint_config.get('replication_keys'),
+            'page_size':  endpoint_config.get('page_size')
         }
         # Loop through children
         children = endpoint_config.get('children')
@@ -243,6 +269,7 @@ def flatten_streams():
                 flat_streams[child_stream_name] = {
                     'key_properties': child_enpoint_config.get('key_properties'),
                     'replication_method': child_enpoint_config.get('replication_method'),
-                    'replication_keys': child_enpoint_config.get('replication_keys')
+                    'replication_keys': child_enpoint_config.get('replication_keys'),
+                    'page_size': child_enpoint_config.get('page_size')
                 }
     return flat_streams

@@ -136,7 +136,8 @@ def sync_endpoint(client,
                   id_fields=None,
                   selected_streams=None,
                   parent=None,
-                  parent_id=None):
+                  parent_id=None,
+                  page_size=None):
 
 
     # Get the latest bookmark for the stream and set the last_integer/datetime
@@ -169,7 +170,8 @@ def sync_endpoint(client,
     date_list = [str(start_dt + timedelta(days=x)) for x in range((end_dt - start_dt).days + 1)]
     endpoint_total = 0
     total_records = 0
-    limit = 500 # PageSize (default for API is 1000, but we're limiting to 500 to avoid load errors on the API which were quite common)
+    # Use stream-specific page size, fallback to 500 if not provided
+    limit = page_size if page_size is not None else 500
     for bookmark_date in date_list:
         page = 1
         offset = 0
@@ -322,6 +324,8 @@ def sync_endpoint(client,
                                         '<model_id>', model_id)
                                 child_bookmark_field = next(iter(child_endpoint_config.get(
                                     'replication_keys', [])), None)
+                                # Get child-specific page size from endpoint config
+                                child_page_size = child_endpoint_config.get('page_size')
                                 child_total_records = sync_endpoint(
                                     client=client,
                                     catalog=catalog,
@@ -341,7 +345,8 @@ def sync_endpoint(client,
                                     id_fields=child_endpoint_config.get('key_properties'),
                                     selected_streams=selected_streams,
                                     parent=child_endpoint_config.get('parent'),
-                                    parent_id=parent_id)
+                                    parent_id=parent_id,
+                                    page_size=child_page_size)
                                 LOGGER.info(
                                     'FINISHED Sync for Stream: {}, parent_id: {}, total_records: {}'\
                                         .format(child_stream_name, parent_id, child_total_records))
@@ -429,6 +434,7 @@ def sync(client, config, catalog, state):
                 bookmark_type=endpoint_config.get('bookmark_type'),
                 data_key=endpoint_config.get('data_key', 'results'),
                 id_fields=endpoint_config.get('key_properties'),
+                page_size=endpoint_config.get('page_size'),
                 selected_streams=selected_streams)
 
             update_currently_syncing(state, None)
