@@ -203,7 +203,7 @@ STREAMS = {
         'path': 'MediaPartners',
         'data_key': 'Partners',
         'key_properties': ['id'],
-        'page_size': 20000,
+        'page_size': 1000,
         'replication_method': 'FULL_TABLE',
     },
     'phone_numbers': {
