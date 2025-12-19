@@ -116,7 +116,7 @@ STREAMS = {
                 'path': 'Campaigns/{}/MediaPartnerGroups',
                 'data_key': 'Groups',
                 'key_properties': ['id'],
-                'page_size': 20000,
+                'page_size': 100,
                 'replication_method': 'FULL_TABLE',
                 'parent': 'campaign'
             },
