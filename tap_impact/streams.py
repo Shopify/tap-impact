@@ -125,9 +125,7 @@ STREAMS = {
                 'data_key': 'Notes',
                 'key_properties': ['id'],
                 'page_size': 20000,
-                'replication_method': 'INCREMENTAL',
-                'replication_keys': ['modification_date'],
-                'bookmark_type': 'datetime',
+                'replication_method': 'FULL_TABLE',
                 'parent': 'campaign'
             }
         }
