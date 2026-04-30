@@ -31,7 +31,7 @@ SAMPLE_API_RESPONSE = {
                 "labels": ["/affiliates page"],
                 "special_terms_list": None,
                 "promotional_terms": [{"some": "data"}],
-                "events_payouts": [
+                "event_payouts": [
                     {
                         "event_type_id": "57793",
                         "event_type_name": "Retained Full Price Shops: 6 Mo",

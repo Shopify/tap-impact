@@ -130,17 +130,26 @@ def _ensure_list(value):
     return []
 
 
-# Transform contracts to fix type mismatches between the Impact API response
-# and the Singer schema.  The API returns many numeric values as strings and
-# single nested objects where the schema expects arrays.
+# Transform contracts to fix mismatches between the Impact API response
+# and the Singer schema.
 #
-# Without these coercions the Singer transformer silently drops the entire
-# events_payouts array because it fails strict schema validation.
+# Key issues:
+# 1. Field name mismatch: API returns "EventPayouts" which convert_json
+#    turns into "event_payouts", but schema expects "events_payouts".
+#    Same for "SpecialTermsList" -> "special_terms_list" (OK) and
+#    "PromotionalTerms" -> "promotional_terms" (not in schema).
+# 2. Type mismatches: API returns numerics as strings, single nested
+#    objects as dicts where schema expects arrays.
+# 3. additionalProperties: false means unrecognized fields cause drops.
 def transform_contracts(this_json, data_key):
     for record in this_json[data_key]:
         template_terms = record.get('template_terms')
         if not template_terms or not isinstance(template_terms, dict):
             continue
+
+        # --- fix field name: event_payouts -> events_payouts ---
+        if 'event_payouts' in template_terms and 'events_payouts' not in template_terms:
+            template_terms['events_payouts'] = template_terms.pop('event_payouts')
 
         # --- top-level template_terms: coerce string -> int/float ---
         template_terms['change_notification_period'] = _safe_int(
