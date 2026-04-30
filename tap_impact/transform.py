@@ -101,6 +101,7 @@ def _safe_int(value):
     try:
         return int(value)
     except (ValueError, TypeError):
+        LOGGER.warning('_safe_int: could not coerce %r to int, returning None', value)
         return None
 
 
@@ -113,6 +114,7 @@ def _safe_float(value):
     try:
         return float(value)
     except (ValueError, TypeError):
+        LOGGER.warning('_safe_float: could not coerce %r to float, returning None', value)
         return None
 
 
