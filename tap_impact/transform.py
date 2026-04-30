@@ -92,73 +92,122 @@ def transform_conversion_paths(this_json, data_key):
     return this_json
 
 
-# Unwrap XML-style container objects into flat arrays.
-# The Impact API returns nested arrays wrapped in container objects, e.g.:
-#   "EventPayouts": {"EventPayout": [{...}, ...]}  (multiple items)
-#   "EventPayouts": {"EventPayout": {...}}          (single item as dict)
-# After camelCase conversion this becomes:
-#   "events_payouts": {"event_payout": [{...}, ...]}
-# But the schema expects events_payouts to be a flat array.
-def unwrap_container(value, singular_key):
-    """Unwrap a container object into a list.
+# Safely coerce a string value to int, returning None on failure.
+def _safe_int(value):
+    if value is None:
+        return None
+    if isinstance(value, int):
+        return value
+    try:
+        return int(value)
+    except (ValueError, TypeError):
+        return None
 
-    Args:
-        value: The field value (could be list, dict-wrapper, or None).
-        singular_key: The snake_case singular key inside the wrapper dict.
 
-    Returns:
-        A list of items.
-    """
+# Safely coerce a string value to float, returning None on failure.
+def _safe_float(value):
+    if value is None:
+        return None
+    if isinstance(value, (int, float)):
+        return float(value)
+    try:
+        return float(value)
+    except (ValueError, TypeError):
+        return None
+
+
+# Ensure a value is a list.  Handles:
+#   None          -> []
+#   [items]       -> [items]          (already a list)
+#   {single_obj}  -> [{single_obj}]   (API returns single object instead of array)
+def _ensure_list(value):
     if value is None:
         return []
     if isinstance(value, list):
         return value
     if isinstance(value, dict):
-        inner = value.get(singular_key, [])
-        if isinstance(inner, list):
-            return inner
-        elif isinstance(inner, dict):
-            return [inner]
-        return []
+        return [value]
     return []
 
 
-# Unwrap nested arrays in contract template_terms that use XML-style wrappers.
-# Affected fields: events_payouts, labels, special_terms_list, and nested arrays
-# within events_payouts items (limits, locking, payouts_adjustments, payouts_groups,
-# payout_restrictions, payout_scheduling, performance_bonus, valid_referrals).
+# Transform contracts to fix type mismatches between the Impact API response
+# and the Singer schema.  The API returns many numeric values as strings and
+# single nested objects where the schema expects arrays.
+#
+# Without these coercions the Singer transformer silently drops the entire
+# events_payouts array because it fails strict schema validation.
 def transform_contracts(this_json, data_key):
     for record in this_json[data_key]:
         template_terms = record.get('template_terms')
         if not template_terms or not isinstance(template_terms, dict):
             continue
 
-        # Unwrap top-level arrays in template_terms
-        template_terms['events_payouts'] = unwrap_container(
-            template_terms.get('events_payouts'), 'event_payout')
-        template_terms['labels'] = unwrap_container(
-            template_terms.get('labels'), 'label')
-        template_terms['special_terms_list'] = unwrap_container(
-            template_terms.get('special_terms_list'), 'special_terms')
+        # --- top-level template_terms: coerce string -> int/float ---
+        template_terms['change_notification_period'] = _safe_int(
+            template_terms.get('change_notification_period'))
+        template_terms['max_return_percentage'] = _safe_float(
+            template_terms.get('max_return_percentage'))
+        template_terms['template_id'] = _safe_int(
+            template_terms.get('template_id'))
+        template_terms['version_id'] = _safe_int(
+            template_terms.get('version_id'))
+        template_terms['contract_start_slotting_fee'] = _safe_float(
+            template_terms.get('contract_start_slotting_fee'))
+        template_terms['first_action_slotting_fee'] = _safe_float(
+            template_terms.get('first_action_slotting_fee'))
+        template_terms['min_earning_per_click'] = _safe_float(
+            template_terms.get('min_earning_per_click'))
+        template_terms['monthly_slotting_fee'] = _safe_float(
+            template_terms.get('monthly_slotting_fee'))
+        template_terms['spend_limit'] = _safe_float(
+            template_terms.get('spend_limit'))
+        template_terms['action_limit'] = _safe_int(
+            template_terms.get('action_limit'))
 
-        # Unwrap nested arrays within each event_payout item
+        # --- ensure array fields are lists (API may return None or single dict) ---
+        template_terms['events_payouts'] = _ensure_list(
+            template_terms.get('events_payouts'))
+        template_terms['labels'] = _ensure_list(
+            template_terms.get('labels'))
+        template_terms['special_terms_list'] = _ensure_list(
+            template_terms.get('special_terms_list'))
+
+        # --- drop fields not in schema (additionalProperties: false) ---
+        template_terms.pop('promotional_terms', None)
+
+        # --- events_payouts items: coerce types + ensure nested arrays ---
         for ep in template_terms.get('events_payouts', []):
             if not isinstance(ep, dict):
                 continue
-            ep['limits'] = unwrap_container(ep.get('limits'), 'limit')
-            ep['locking'] = unwrap_container(ep.get('locking'), 'locking')
-            ep['payouts_adjustments'] = unwrap_container(
-                ep.get('payouts_adjustments'), 'payouts_adjustment')
-            ep['payouts_groups'] = unwrap_container(
-                ep.get('payouts_groups'), 'payouts_group')
-            ep['payout_restrictions'] = unwrap_container(
-                ep.get('payout_restrictions'), 'payout_restriction')
-            ep['payout_scheduling'] = unwrap_container(
-                ep.get('payout_scheduling'), 'payout_schedule')
-            ep['performance_bonus'] = unwrap_container(
-                ep.get('performance_bonus'), 'performance_bonus')
-            ep['valid_referrals'] = unwrap_container(
-                ep.get('valid_referrals'), 'valid_referral')
+
+            # string -> int / float coercions
+            ep['event_type_id'] = _safe_int(ep.get('event_type_id'))
+            ep['default_payout'] = _safe_float(ep.get('default_payout'))
+            ep['default_payout_rate'] = _safe_float(ep.get('default_payout_rate'))
+
+            # ensure sub-objects are always lists
+            ep['limits'] = _ensure_list(ep.get('limits'))
+            ep['locking'] = _ensure_list(ep.get('locking'))
+            ep['payouts_adjustments'] = _ensure_list(ep.get('payouts_adjustments'))
+            ep['payouts_groups'] = _ensure_list(ep.get('payouts_groups'))
+            ep['payout_restrictions'] = _ensure_list(ep.get('payout_restrictions'))
+            ep['payout_scheduling'] = _ensure_list(ep.get('payout_scheduling'))
+            ep['performance_bonus'] = _ensure_list(ep.get('performance_bonus'))
+            ep['valid_referrals'] = _ensure_list(ep.get('valid_referrals'))
+
+            # coerce nested int fields inside sub-arrays
+            for vr in ep.get('valid_referrals', []):
+                if isinstance(vr, dict):
+                    vr['window'] = _safe_int(vr.get('window'))
+
+            for lock in ep.get('locking', []):
+                if isinstance(lock, dict):
+                    lock['month_offset'] = _safe_int(lock.get('month_offset'))
+                    lock['day_offset'] = _safe_int(lock.get('day_offset'))
+
+            for ps in ep.get('payout_scheduling', []):
+                if isinstance(ps, dict):
+                    ps['day_offset'] = _safe_int(ps.get('day_offset'))
 
         record['template_terms'] = template_terms
     return this_json
