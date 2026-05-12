@@ -52,8 +52,14 @@ SAMPLE_API_RESPONSE = {
                             {"type": "PARENT_ACTIONS", "window": "600", "window_unit": "DAY"}
                         ],
                         "limits": None,
-                        "payouts_adjustments": None,
-                        "payouts_groups": [
+                        # NOTE: these keys (payout_adjustments / payout_groups, singular
+                        # "payout") are what convert_json() produces from the API's
+                        # PayoutAdjustments / PayoutGroups. The schema expects them
+                        # under payouts_adjustments / payouts_groups (plural "payouts").
+                        # Using the post-convert_json names here ensures the test would
+                        # catch a regression of the rename block in transform_contracts.
+                        "payout_adjustments": None,
+                        "payout_groups": [
                             {"id": "abc", "rank": "1", "rules": []}
                         ],
                         "payout_restrictions": None,
@@ -166,6 +172,28 @@ def test_transform_contracts_extraction_date_added():
     print("  ✅ extraction_date added")
 
 
+def test_transform_contracts_renames_payout_groups_and_adjustments():
+    """payout_groups/payout_adjustments (from convert_json) should be
+    renamed to payouts_groups/payouts_adjustments (schema names), with
+    data preserved. Regression test for the silent-data-loss bug where
+    PayoutGroups/PayoutAdjustments arrived empty in BigQuery."""
+    result = transform_json(SAMPLE_API_RESPONSE, 'contracts', 'Contracts')
+    ep = result[0]['template_terms']['events_payouts'][0]
+
+    # post-convert_json names should be gone
+    assert 'payout_groups' not in ep, "payout_groups should be renamed to payouts_groups"
+    assert 'payout_adjustments' not in ep, "payout_adjustments should be renamed to payouts_adjustments"
+
+    # schema names should hold the original data (not lost to additionalProperties: false)
+    assert isinstance(ep['payouts_groups'], list)
+    assert len(ep['payouts_groups']) == 1, f"Expected 1 payouts_groups entry, got {len(ep['payouts_groups'])}"
+    assert ep['payouts_groups'][0]['id'] == 'abc'
+
+    # payout_adjustments was None in fixture; should become [] after rename + _ensure_list
+    assert ep['payouts_adjustments'] == []
+    print("  ✅ payout_groups/payout_adjustments renamed to schema names")
+
+
 if __name__ == '__main__':
     print("Running transform_contracts tests...")
     test_transform_contracts_type_coercion()
@@ -176,4 +204,5 @@ if __name__ == '__main__':
     test_transform_contracts_drops_promotional_terms()
     test_transform_contracts_labels_passthrough()
     test_transform_contracts_extraction_date_added()
-    print("\n✅ All 8 tests passed!")
+    test_transform_contracts_renames_payout_groups_and_adjustments()
+    print("\n✅ All 9 tests passed!")

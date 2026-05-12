@@ -191,6 +191,15 @@ def transform_contracts(this_json, data_key):
             if not isinstance(ep, dict):
                 continue
 
+            # --- fix field names: API PayoutGroups/PayoutAdjustments
+            # convert to payout_groups/payout_adjustments, but schema
+            # expects payouts_groups/payouts_adjustments (same pattern
+            # as event_payouts -> events_payouts above).
+            if 'payout_groups' in ep and 'payouts_groups' not in ep:
+                ep['payouts_groups'] = ep.pop('payout_groups')
+            if 'payout_adjustments' in ep and 'payouts_adjustments' not in ep:
+                ep['payouts_adjustments'] = ep.pop('payout_adjustments')
+
             # string -> int / float coercions
             ep['event_type_id'] = _safe_int(ep.get('event_type_id'))
             ep['default_payout'] = _safe_float(ep.get('default_payout'))
