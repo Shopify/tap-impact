@@ -133,18 +133,13 @@ def _ensure_list(value):
 
 
 # Transform contracts to fix mismatches between the Impact API response
-# and the Singer schema.
-#
-# Key issues:
-# 1. Field name mismatch: API returns "EventPayouts" which convert_json
-#    turns into "event_payouts", but schema expects "events_payouts".
-#    Same for "SpecialTermsList" -> "special_terms_list" (OK) and
-#    "PromotionalTerms" -> "promotional_terms" (not in schema).
-# 2. Type mismatches: API returns numerics as strings, single nested
-#    objects as dicts where schema expects arrays.
-# 3. additionalProperties: false means unrecognized fields cause drops.
+# and the Singer schema. Fixes field-name skew, coerces string numerics,
+# and normalizes "single dict where schema expects array" cases.
 def transform_contracts(this_json, data_key):
     for record in this_json[data_key]:
+        # --- contract-level: coerce campaign_id string -> int ---
+        record['campaign_id'] = _safe_int(record.get('campaign_id'))
+
         template_terms = record.get('template_terms')
         if not template_terms or not isinstance(template_terms, dict):
             continue
@@ -182,9 +177,10 @@ def transform_contracts(this_json, data_key):
             template_terms.get('labels'))
         template_terms['special_terms_list'] = _ensure_list(
             template_terms.get('special_terms_list'))
-
-        # --- drop fields not in schema (additionalProperties: false) ---
-        template_terms.pop('promotional_terms', None)
+        template_terms['promotional_terms'] = _ensure_list(
+            template_terms.get('promotional_terms'))
+        template_terms['cpc_payouts'] = _ensure_list(
+            template_terms.get('cpc_payouts'))
 
         # --- events_payouts items: coerce types + ensure nested arrays ---
         for ep in template_terms.get('events_payouts', []):
