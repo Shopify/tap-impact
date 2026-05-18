@@ -11,7 +11,7 @@ SAMPLE_API_RESPONSE = {
         {
             "id": "S-26838993",
             "status": "A",
-            # --- contract-level fields (Phase 2 — Gary's ask) ---
+            # --- contract-level fields added in Phase 2 ---
             "campaign_id": "99999",
             "campaign_name": "Shopify Affiliate Program",
             "has_campaign_terms": "true",
@@ -42,7 +42,7 @@ SAMPLE_API_RESPONSE = {
                      "terms_pdf_uri": "https://example.com/promo.pdf",
                      "terms_type": "STANDARD"}
                 ],
-                # --- cpc_payouts forward-compat (Gary's ask) ---
+                # --- cpc_payouts forward-compat ---
                 "cpc_payouts": [{"event_type_id": "1234", "rate": "0.25"}],
                 "event_payouts": [
                     {
@@ -228,12 +228,12 @@ def test_transform_contracts_extraction_date_added():
 
 
 def test_transform_contracts_unknown_nested_fields_ride_through():
-    """Gary's [ALL CHILD ATTRIBUTES] ask: unknown sub-fields inside the
-    8 sub-arrays under events_payouts[] (payouts_groups, payouts_adjustments,
-    payout_restrictions, payout_scheduling, performance_bonus, limits,
-    locking, valid_referrals) + promotional_terms[] should survive the
-    Singer Transformer roundtrip, since those nested item schemas are now
-    opaque {type: object} instead of strict-with-properties.
+    """Unknown sub-fields inside the 8 sub-arrays under events_payouts[]
+    (payouts_groups, payouts_adjustments, payout_restrictions,
+    payout_scheduling, performance_bonus, limits, locking, valid_referrals)
+    + promotional_terms[] should survive the Singer Transformer roundtrip,
+    since those nested item schemas are now opaque {type: object} instead
+    of strict-with-properties.
 
     Regression test for the dropped-data class of bug Phase 2 closes:
     future Impact API additions inside these sub-arrays must land in BQ."""
