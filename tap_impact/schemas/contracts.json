@@ -62,7 +62,7 @@
         },
         "contract_start_slotting_fee": {
           "type": ["null", "number"],
-          "multipleOf": 1e-8
+          "multipleOf": 1e-08
         },
         "currency": {
           "type": ["null", "string"]
@@ -83,11 +83,11 @@
                   },
                   "default_payout": {
                     "type": ["null", "number"],
-                    "multipleOf": 1e-8
+                    "multipleOf": 1e-08
                   },
                   "default_payout_rate": {
                     "type": ["null", "number"],
-                    "multipleOf": 1e-8
+                    "multipleOf": 1e-08
                   },
                   "event_category": {
                     "type": ["null", "string"]
@@ -103,29 +103,7 @@
                       {
                         "type": "array",
                         "items": {
-                          "type": "object",
-                          "additionalProperties": false,
-                          "properties": {
-                            "limit_by": {
-                              "type": ["null", "string"]
-                            },
-                            "period": {
-                              "type": ["null", "string"]
-                            },
-                            "type": {
-                              "type": ["null", "string"]
-                            },
-                            "subtype": {
-                              "type": ["null", "string"]
-                            },
-                            "value": {
-                              "type": ["null", "number"],
-                              "multipleOf": 1e-8
-                            },
-                            "weekend_override_value": {
-                              "type": ["null", "integer"]
-                            }
-                          }
+                          "type": "object"
                         }
                       },
                       {
@@ -144,31 +122,7 @@
                       {
                         "type": "array",
                         "items": {
-                          "type": "object",
-                          "additionalProperties": false,
-                          "properties": {
-                            "basis": {
-                              "type": ["null", "string"]
-                            },
-                            "day_of_month": {
-                              "type": ["null", "integer"]
-                            },
-                            "day_offset": {
-                              "type": ["null", "integer"]
-                            },
-                            "max_months_open_ended_period": {
-                              "type": ["null", "integer"]
-                            },
-                            "month_offset": {
-                              "type": ["null", "integer"]
-                            },
-                            "open_ended_autolocking_mode": {
-                              "type": ["null", "string"]
-                            },
-                            "period": {
-                              "type": ["null", "string"]
-                            }
-                          }
+                          "type": "object"
                         }
                       },
                       {
@@ -181,58 +135,7 @@
                       {
                         "type": "array",
                         "items": {
-                          "type": "object",
-                          "additionalProperties": false,
-                          "properties": {
-                            "amount": {
-                              "type": ["null", "number"],
-                              "multipleOf": 1e-8
-                            },
-                            "direction": {
-                              "type": ["null", "string"]
-                            },
-                            "id": {
-                              "type": ["null", "string"]
-                            },
-                            "rate": {
-                              "type": ["null", "integer"]
-                            },
-                            "rules": {
-                              "anyOf": [
-                                {
-                                  "type": "array",
-                                  "items": {
-                                    "type": "object",
-                                    "additionalProperties": false,
-                                    "properties": {
-                                      "operator": {
-                                        "type": ["null", "string"]
-                                      },
-                                      "variable": {
-                                        "type": ["null", "string"]
-                                      },
-                                      "values": {
-                                        "anyOf": [
-                                          {
-                                            "type": "array",
-                                            "items": {
-                                              "type": "object"
-                                            }
-                                          },
-                                          {
-                                            "type": ["null", "string"]
-                                          }
-                                        ]
-                                      }
-                                    }
-                                  }
-                                },
-                                {
-                                  "type": "null"
-                                }
-                              ]
-                            }
-                          }
+                          "type": "object"
                         }
                       },
                       {
@@ -245,127 +148,7 @@
                       {
                         "type": "array",
                         "items": {
-                          "type": "object",
-                          "additionalProperties": false,
-                          "properties": {
-                            "id": {
-                              "type": ["null", "string"]
-                            },
-                            "limits": {
-                              "anyOf": [
-                                {
-                                  "type": "array",
-                                  "items": {
-                                    "type": "object",
-                                    "additionalProperties": false,
-                                    "properties": {
-                                      "limit_by": {
-                                        "type": ["null", "string"]
-                                      },
-                                      "period": {
-                                        "type": ["null", "string"]
-                                      },
-                                      "type": {
-                                        "type": ["null", "string"]
-                                      },
-                                      "subtype": {
-                                        "type": ["null", "string"]
-                                      },
-                                      "value": {
-                                        "type": ["null", "number"],
-                                        "multipleOf": 1e-8
-                                      },
-                                      "weekend_override_value": {
-                                        "type": ["null", "integer"]
-                                      }
-                                    }
-                                  }
-                                },
-                                {
-                                  "type": "null"
-                                }
-                              ]
-                            },
-                            "payout": {
-                              "type": ["null", "number"],
-                              "multipleOf": 1e-8
-                            },
-                            "payout_rate": {
-                              "type": ["null", "integer"]
-                            },
-                            "rank": {
-                              "type": ["null", "integer"]
-                            },
-                            "rules": {
-                              "anyOf": [
-                                {
-                                  "type": "array",
-                                  "items": {
-                                    "type": "object",
-                                    "additionalProperties": false,
-                                    "properties": {
-                                      "operator": {
-                                        "type": ["null", "string"]
-                                      },
-                                      "variable": {
-                                        "type": ["null", "string"]
-                                      },
-                                      "values": {
-                                        "anyOf": [
-                                          {
-                                            "type": "array",
-                                            "items": {
-                                              "type": "object"
-                                            }
-                                          },
-                                          {
-                                            "type": ["null", "string"]
-                                          }
-                                        ]
-                                      }
-                                    }
-                                  }
-                                },
-                                {
-                                  "type": "null"
-                                }
-                              ]
-                            },
-                            "tiers": {
-                              "anyOf": [
-                                {
-                                  "type": "array",
-                                  "items": {
-                                    "type": "object",
-                                    "additionalProperties": false,
-                                    "properties": {
-                                      "action_threshold": {
-                                        "type": ["null", "integer"]
-                                      },
-                                      "parent_tier": {
-                                        "type": ["null", "integer"]
-                                      },
-                                      "payout": {
-                                        "type": ["null", "number"],
-                                        "multipleOf": 1e-8
-                                      },
-                                      "payout_rate": {
-                                        "type": ["null", "number"],
-                                        "multipleOf": 1e-8
-                                      },
-                                      "revenue_threshold": {
-                                        "type": ["null", "number"],
-                                        "multipleOf": 1e-8
-                                      }
-                                    }
-                                  }
-                                },
-                                {
-                                  "type": "null"
-                                }
-                              ]
-                            }
-                          }
+                          "type": "object"
                         }
                       },
                       {
@@ -381,48 +164,7 @@
                       {
                         "type": "array",
                         "items": {
-                          "type": "object",
-                          "additionalProperties": false,
-                          "properties": {
-                            "id": {
-                              "type": ["null", "string"]
-                            },
-                            "rules": {
-                              "anyOf": [
-                                {
-                                  "type": "array",
-                                  "items": {
-                                    "type": "object",
-                                    "additionalProperties": false,
-                                    "properties": {
-                                      "operator": {
-                                        "type": ["null", "string"]
-                                      },
-                                      "variable": {
-                                        "type": ["null", "string"]
-                                      },
-                                      "values": {
-                                        "anyOf": [
-                                          {
-                                            "type": "array",
-                                            "items": {
-                                              "type": "object"
-                                            }
-                                          },
-                                          {
-                                            "type": ["null", "string"]
-                                          }
-                                        ]
-                                      }
-                                    }
-                                  }
-                                },
-                                {
-                                  "type": "null"
-                                }
-                              ]
-                            }
-                          }
+                          "type": "object"
                         }
                       },
                       {
@@ -435,22 +177,7 @@
                       {
                         "type": "array",
                         "items": {
-                          "type": "object",
-                          "additionalProperties": false,
-                          "properties": {
-                            "basis": {
-                              "type": ["null", "string"]
-                            },
-                            "day_offset": {
-                              "type": ["null", "integer"]
-                            },
-                            "month_offset": {
-                              "type": ["null", "integer"]
-                            },
-                            "period": {
-                              "type": ["null", "string"]
-                            }
-                          }
+                          "type": "object"
                         }
                       },
                       {
@@ -463,50 +190,7 @@
                       {
                         "type": "array",
                         "items": {
-                          "type": "object",
-                          "additionalProperties": false,
-                          "properties": {
-                            "basis": {
-                              "type": ["null", "string"]
-                            },
-                            "bonus_tiers": {
-                              "anyOf": [
-                                {
-                                  "type": "array",
-                                  "items": {
-                                    "type": "object",
-                                    "additionalProperties": false,
-                                    "properties": {
-                                      "action_threshold": {
-                                        "type": ["null", "integer"]
-                                      },
-                                      "payout": {
-                                        "type": ["null", "number"],
-                                        "multipleOf": 1e-8
-                                      },
-                                      "payout_rate": {
-                                        "type": ["null", "number"],
-                                        "multipleOf": 1e-8
-                                      },
-                                      "revenue_threshold": {
-                                        "type": ["null", "number"],
-                                        "multipleOf": 1e-8
-                                      }
-                                    }
-                                  }
-                                },
-                                {
-                                  "type": "null"
-                                }
-                              ]
-                            },
-                            "period": {
-                              "type": ["null", "string"]
-                            },
-                            "type": {
-                              "type": ["null", "string"]
-                            }
-                          }
+                          "type": "object"
                         }
                       },
                       {
@@ -519,19 +203,7 @@
                       {
                         "type": "array",
                         "items": {
-                          "type": "object",
-                          "additionalProperties": false,
-                          "properties": {
-                            "type": {
-                              "type": ["null", "string"]
-                            },
-                            "window": {
-                              "type": ["null", "integer"]
-                            },
-                            "window_unit": {
-                              "type": ["null", "string"]
-                            }
-                          }
+                          "type": "object"
                         }
                       },
                       {
@@ -549,7 +221,7 @@
         },
         "first_action_slotting_fee": {
           "type": ["null", "number"],
-          "multipleOf": 1e-8
+          "multipleOf": 1e-08
         },
         "labels": {
           "anyOf": [
@@ -566,15 +238,15 @@
         },
         "max_return_percentage": {
           "type": ["null", "number"],
-          "multipleOf": 1e-8
+          "multipleOf": 1e-08
         },
         "min_earning_per_click": {
           "type": ["null", "number"],
-          "multipleOf": 1e-8
+          "multipleOf": 1e-08
         },
         "monthly_slotting_fee": {
           "type": ["null", "number"],
-          "multipleOf": 1e-8
+          "multipleOf": 1e-08
         },
         "name": {
           "type": ["null", "string"]
@@ -610,9 +282,35 @@
             }
           ]
         },
+        "promotional_terms": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "object"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "cpc_payouts": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "object"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "spend_limit": {
           "type": ["null", "number"],
-          "multipleOf": 1e-8
+          "multipleOf": 1e-08
         },
         "spend_limit_period": {
           "type": ["null", "string"]
@@ -627,6 +325,28 @@
     },
     "uri": {
       "type": ["null", "string"]
+    },
+    "campaign_id": {
+      "type": ["null", "integer"]
+    },
+    "campaign_name": {
+      "type": ["null", "string"]
+    },
+    "has_campaign_terms": {
+      "type": ["null", "string"]
+    },
+    "zero_payout_hide_report": {
+      "type": ["null", "string"]
+    },
+    "scheduled_terms": {
+      "type": ["null", "object"],
+      "additionalProperties": false,
+      "properties": {
+        "effective_date": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        }
+      }
     },
     "extraction_date": {
       "type": ["null", "string"],

@@ -11,6 +11,12 @@ SAMPLE_API_RESPONSE = {
         {
             "id": "S-26838993",
             "status": "A",
+            # --- contract-level fields added in Phase 2 ---
+            "campaign_id": "99999",
+            "campaign_name": "Shopify Affiliate Program",
+            "has_campaign_terms": "true",
+            "zero_payout_hide_report": "false",
+            "scheduled_terms": {"effective_date": "2026-01-01T00:00:00Z"},
             "template_terms": {
                 "change_notification_period": "1",
                 "currency": "USD",
@@ -30,7 +36,14 @@ SAMPLE_API_RESPONSE = {
                 "spend_limit_period": None,
                 "labels": ["/affiliates page"],
                 "special_terms_list": None,
-                "promotional_terms": [{"some": "data"}],
+                # --- promotional_terms now preserved, not dropped (Phase 2) ---
+                "promotional_terms": [
+                    {"terms_name": "Holiday Promo",
+                     "terms_pdf_uri": "https://example.com/promo.pdf",
+                     "terms_type": "STANDARD"}
+                ],
+                # --- cpc_payouts forward-compat ---
+                "cpc_payouts": [{"event_type_id": "1234", "rate": "0.25"}],
                 "event_payouts": [
                     {
                         "event_type_id": "57793",
@@ -62,7 +75,11 @@ SAMPLE_API_RESPONSE = {
                         "payout_groups": [
                             {"id": "abc", "rank": "1", "rules": []}
                         ],
-                        "payout_restrictions": None,
+                        # payout_restrictions now exercises the new nested
+                        # zero_payout_hide_report field (Phase 2).
+                        "payout_restrictions": [
+                            {"id": "pr-1", "zero_payout_hide_report": "1", "rules": []}
+                        ],
                         "performance_bonus": None,
                     }
                 ],
@@ -142,18 +159,56 @@ def test_transform_contracts_none_to_empty_list():
     assert tt['special_terms_list'] == []
     assert ep['limits'] == []
     assert ep['payouts_adjustments'] == []
-    assert ep['payout_restrictions'] == []
     assert ep['performance_bonus'] == []
     print("  ✅ None→[] for array fields")
 
 
-def test_transform_contracts_drops_promotional_terms():
-    """promotional_terms not in schema, should be dropped."""
+def test_transform_contracts_preserves_promotional_terms():
+    """promotional_terms now declared in schema, should survive transform
+    (regression test — was being explicitly .pop()'d before Phase 2)."""
     result = transform_json(SAMPLE_API_RESPONSE, 'contracts', 'Contracts')
     tt = result[0]['template_terms']
 
-    assert 'promotional_terms' not in tt, "promotional_terms should be dropped"
-    print("  ✅ promotional_terms dropped")
+    assert 'promotional_terms' in tt, "promotional_terms should be preserved"
+    assert isinstance(tt['promotional_terms'], list)
+    assert tt['promotional_terms'][0]['terms_name'] == 'Holiday Promo'
+    assert tt['promotional_terms'][0]['terms_type'] == 'STANDARD'
+    # cpc_payouts also forward-compat preserved
+    assert isinstance(tt['cpc_payouts'], list)
+    assert tt['cpc_payouts'][0]['event_type_id'] == '1234'
+    print("  ✅ promotional_terms + cpc_payouts preserved")
+
+
+def test_transform_contracts_new_contract_level_fields():
+    """5 contract-level fields added in Phase 2 should survive transform."""
+    result = transform_json(SAMPLE_API_RESPONSE, 'contracts', 'Contracts')
+    record = result[0]
+
+    # campaign_id coerced from "99999" -> 99999
+    assert record['campaign_id'] == 99999, f"Expected int 99999, got {record['campaign_id']!r}"
+    assert isinstance(record['campaign_id'], int)
+
+    # string passthroughs
+    assert record['campaign_name'] == 'Shopify Affiliate Program'
+    assert record['has_campaign_terms'] == 'true'
+    assert record['zero_payout_hide_report'] == 'false'
+
+    # scheduled_terms is an object — survives untouched
+    assert isinstance(record['scheduled_terms'], dict)
+    assert record['scheduled_terms']['effective_date'] == '2026-01-01T00:00:00Z'
+    print("  ✅ 5 contract-level fields preserved + campaign_id coerced")
+
+
+def test_transform_contracts_payout_restrictions_nested_field():
+    """zero_payout_hide_report nested inside payout_restrictions[] should
+    survive transform (Phase 2 — newly declared in schema)."""
+    result = transform_json(SAMPLE_API_RESPONSE, 'contracts', 'Contracts')
+    pr = result[0]['template_terms']['events_payouts'][0]['payout_restrictions']
+
+    assert isinstance(pr, list) and len(pr) == 1
+    assert pr[0]['id'] == 'pr-1'
+    assert pr[0]['zero_payout_hide_report'] == '1'
+    print("  ✅ payout_restrictions[].zero_payout_hide_report preserved")
 
 
 def test_transform_contracts_labels_passthrough():
@@ -170,6 +225,61 @@ def test_transform_contracts_extraction_date_added():
     result = transform_json(SAMPLE_API_RESPONSE, 'contracts', 'Contracts')
     assert 'extraction_date' in result[0]
     print("  ✅ extraction_date added")
+
+
+def test_transform_contracts_unknown_nested_fields_ride_through():
+    """Unknown sub-fields inside the 8 sub-arrays under events_payouts[]
+    (payouts_groups, payouts_adjustments, payout_restrictions,
+    payout_scheduling, performance_bonus, limits, locking, valid_referrals)
+    + promotional_terms[] should survive the Singer Transformer roundtrip,
+    since those nested item schemas are now opaque {type: object} instead
+    of strict-with-properties.
+
+    Regression test for the dropped-data class of bug Phase 2 closes:
+    future Impact API additions inside these sub-arrays must land in BQ."""
+    import json, os
+    from singer.transform import Transformer
+
+    schema_path = os.path.join(os.path.dirname(__file__), '..',
+                               'tap_impact', 'schemas', 'contracts.json')
+    schema = json.load(open(schema_path))
+
+    # Synthetic record with unknown sub-fields planted inside opaque containers.
+    # CamelCase intentionally — mimics the real API shape pre-convert_json.
+    synthetic = {
+        "Contracts": [{
+            "Id": "ride-through-test",
+            "TemplateTerms": {
+                "EventPayouts": [{
+                    "EventTypeId": "1",
+                    "PayoutGroups": [{
+                        "Id": "pg-1",
+                        "FutureImpactField": "should survive",
+                        "DeepArray": [{"x": 1}]
+                    }],
+                    "Locking": {"basis": "TRACKED", "future_locking_field": "new"},
+                    "ValidReferrals": [{"type": "X", "brand_new_field": "v"}]
+                }]
+            }
+        }]
+    }
+
+    records = transform_json(synthetic, 'contracts', 'Contracts')
+    out = Transformer().transform(records[0], schema)
+    ep = out['template_terms']['events_payouts'][0]
+
+    pg = ep['payouts_groups'][0]
+    assert pg['future_impact_field'] == 'should survive', \
+        f"Unknown nested field dropped — opacify regressed. Got: {pg}"
+    assert pg['deep_array'] == [{'x': 1}]
+
+    lock = ep['locking'][0]
+    assert lock['future_locking_field'] == 'new'
+
+    vr = ep['valid_referrals'][0]
+    assert vr['brand_new_field'] == 'v'
+
+    print("  ✅ unknown nested fields ride through opaque sub-array items")
 
 
 def test_transform_contracts_renames_payout_groups_and_adjustments():
@@ -201,8 +311,11 @@ if __name__ == '__main__':
     test_transform_contracts_dict_to_list()
     test_transform_contracts_valid_referrals()
     test_transform_contracts_none_to_empty_list()
-    test_transform_contracts_drops_promotional_terms()
+    test_transform_contracts_preserves_promotional_terms()
+    test_transform_contracts_new_contract_level_fields()
+    test_transform_contracts_payout_restrictions_nested_field()
     test_transform_contracts_labels_passthrough()
     test_transform_contracts_extraction_date_added()
+    test_transform_contracts_unknown_nested_fields_ride_through()
     test_transform_contracts_renames_payout_groups_and_adjustments()
-    print("\n✅ All 9 tests passed!")
+    print("\n✅ All 12 tests passed!")
