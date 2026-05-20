@@ -103,7 +103,15 @@ STREAMS = {
                 'key_properties': ['id'],
                 'page_size': 20000,
                 'replication_method': 'FULL_TABLE',
-                'parent': 'campaign'
+                'parent': 'campaign',
+                # Without Status, the API defaults to ACTIVE-only and silently drops
+                # non-ACTIVE contracts. The RestContractStatus enum accepts exactly:
+                # ACTIVE, EXPIRED, PENDING, UPCOMING, DECLINED (verified against
+                # api.impact.com 2026-05-20). DECLINED is excluded intentionally as it
+                # represents partner-rejected proposals that never went live.
+                'params': {
+                    'Status': 'ACTIVE,EXPIRED,PENDING,UPCOMING'
+                }
             },
             'conversion_paths': {
                 'path': 'Campaigns/{}/Models/<model_id>/ConversionPaths',
