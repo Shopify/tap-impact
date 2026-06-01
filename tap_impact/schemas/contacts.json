@@ -71,7 +71,7 @@
       "type": ["null", "string"]
     },
     "work_phone_number": {
-      "type": ["null", "integer"]
+      "type": ["null", "string"]
     },
     "work_phone_number_country": {
       "type": ["null", "string"]
